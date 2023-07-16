@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('../models/user');
 
 const getUsers = (req, res) => {
@@ -20,15 +19,11 @@ const createUser = (req, res) => {
       res.send(user);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res
-          .status(400)
-          .send({ message: 'Переданы невалидные данные при создании пользователя' });
-        return;
+      if (error.name === 'Error') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере' });
       }
-      res
-        .status(500)
-        .send({ message: 'Ошибка сервера' });
     });
 };
 
@@ -43,10 +38,12 @@ const getUser = (req, res) => {
         res.send(user);
       }
     })
-    .catch(() => {
-      res
-        .status(500)
-        .send({ message: 'Ошибка сервера' });
+    .catch((error) => {
+      if (error.name === 'Error') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере' });
+      }
     });
 };
 
@@ -61,9 +58,19 @@ const updateProfile = (req, res) => {
       upsert: true,
     },
   )
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+      } else {
+        res.send(user);
+      }
+    })
     .catch((error) => {
-      res.status(400).send(error);
+      if (error.name === 'Error') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере' });
+      }
     });
 };
 
@@ -78,9 +85,19 @@ const updateAvatar = (req, res) => {
       upsert: true,
     },
   )
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+      } else {
+        res.send(user);
+      }
+    })
     .catch((error) => {
-      res.status(400).send(error);
+      if (error.name === 'Error') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере' });
+      }
     });
 };
 

@@ -33,11 +33,14 @@ const getUser = (req, res) => {
 
   User.findById(userId)
     .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      }
       res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(400).send({ message: 'Пользователь не найден' });
         return;
       }
       res.status(500).send({ message: 'Ошибка на сервере' });
@@ -56,6 +59,9 @@ const updateProfile = (req, res) => {
     },
   )
     .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      }
       res.send(user);
     })
     .catch((error) => {
@@ -83,6 +89,9 @@ const updateAvatar = (req, res) => {
     },
   )
     .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      }
       res.send(user);
     })
     .catch((error) => {

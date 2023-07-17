@@ -34,6 +34,9 @@ const deleteCard = (req, res) => {
 
   Card.findByIdAndRemove(cardId)
     .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      }
       res.send({ data: card });
     })
     .catch((error) => {
@@ -58,6 +61,9 @@ const addLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      }
       res.send({ data: card });
     })
     .catch((error) => {
@@ -82,6 +88,9 @@ const deleteLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      }
       res.send({ data: card });
     })
     .catch((error) => {

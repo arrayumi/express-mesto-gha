@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const User = require('../models/user');
 
+const serverError = 500;
+const notFoundError = 404;
+const invalidDataError = 400;
+
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
@@ -8,7 +12,7 @@ const getUsers = (req, res) => {
     })
     .catch(() => {
       res
-        .status(500)
+        .status(serverError)
         .send({ message: 'Ошибка на сервере' });
     });
 };
@@ -21,10 +25,10 @@ const createUser = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Невалидные данные' });
+        res.status(invalidDataError).send({ message: 'Невалидные данные' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -34,16 +38,16 @@ const getUser = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(notFoundError).send({ message: 'Пользователь не найден' });
       }
       res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Пользователь не найден' });
+        res.status(invalidDataError).send({ message: 'Пользователь не найден' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -60,20 +64,20 @@ const updateProfile = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(notFoundError).send({ message: 'Пользователь не найден' });
       }
       res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(notFoundError).send({ message: 'Пользователь не найден' });
         return;
       }
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -90,20 +94,20 @@ const updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(notFoundError).send({ message: 'Пользователь не найден' });
       }
       res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(notFoundError).send({ message: 'Пользователь не найден' });
         return;
       }
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 

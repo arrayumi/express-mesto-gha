@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
 
+const serverError = 500;
+const notFoundError = 404;
+const invalidDataError = 400;
+
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
@@ -8,7 +12,7 @@ const getCards = (req, res) => {
     })
     .catch(() => {
       res
-        .status(500)
+        .status(serverError)
         .send({ message: 'Ошибка на сервере' });
     });
 };
@@ -22,10 +26,10 @@ const createCard = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Невалидные данные' });
+        res.status(invalidDataError).send({ message: 'Невалидные данные' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -35,16 +39,16 @@ const deleteCard = (req, res) => {
   Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(notFoundError).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: card });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -58,16 +62,16 @@ const addLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(notFoundError).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: card });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -81,16 +85,16 @@ const deleteLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(notFoundError).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: card });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
         return;
       }
-      res.status(500).send({ message: 'Ошибка на сервере' });
+      res.status(serverError).send({ message: 'Ошибка на сервере' });
     });
 };
 

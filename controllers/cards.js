@@ -44,10 +44,6 @@ const deleteCard = (req, res) => {
         res.status(400).send({ message: 'Некорректный id карточки' });
         return;
       }
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Некорректные данные' });
-        return;
-      }
       res.status(500).send({ message: 'Ошибка на сервере' });
     });
 };
@@ -71,10 +67,6 @@ const addLike = (req, res) => {
         res.status(400).send({ message: 'Некорректный id карточки' });
         return;
       }
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Некорректные данные' });
-        return;
-      }
       res.status(500).send({ message: 'Ошибка на сервере' });
     });
 };
@@ -96,10 +88,6 @@ const deleteLike = (req, res) => {
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: 'Некорректный id карточки' });
-        return;
-      }
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Некорректные данные' });
         return;
       }
       res.status(500).send({ message: 'Ошибка на сервере' });

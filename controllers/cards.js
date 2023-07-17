@@ -22,7 +22,7 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      res.send(card);
+      res.status(201).send(card);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
@@ -37,15 +37,17 @@ const deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
+    .orFail(new Error('notValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(notFoundError).send({ message: 'Карточка не найдена' });
-      }
       res.send({ data: card });
     })
     .catch((error) => {
+      if (error.message === 'notValidId') {
+        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
+        return;
+      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
       res.status(serverError).send({ message: 'Ошибка на сервере' });
@@ -60,15 +62,17 @@ const addLike = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('notValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(notFoundError).send({ message: 'Карточка не найдена' });
-      }
       res.send({ data: card });
     })
     .catch((error) => {
+      if (error.message === 'notValidId') {
+        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
+        return;
+      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
       res.status(serverError).send({ message: 'Ошибка на сервере' });
@@ -83,15 +87,17 @@ const deleteLike = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('notValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(notFoundError).send({ message: 'Карточка не найдена' });
-      }
       res.send({ data: card });
     })
     .catch((error) => {
+      if (error.message === 'notValidId') {
+        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
+        return;
+      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректный id карточки' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
       res.status(serverError).send({ message: 'Ошибка на сервере' });

@@ -21,7 +21,7 @@ const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
-      res.send(user);
+      res.status(201).send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
@@ -36,15 +36,17 @@ const getUser = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
+    .orFail(new Error('notValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(notFoundError).send({ message: 'Пользователь не найден' });
-      }
       res.send(user);
     })
     .catch((error) => {
+      if (error.message === 'notValidId') {
+        res.status(notFoundError).send({ message: 'Некорректный id пользователя' });
+        return;
+      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Пользователь не найден' });
+        res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
       res.status(serverError).send({ message: 'Ошибка на сервере' });
@@ -59,7 +61,6 @@ const updateProfile = (req, res) => {
     {
       new: true,
       runValidators: true,
-      upsert: true,
     },
   )
     .then((user) => {
@@ -69,11 +70,8 @@ const updateProfile = (req, res) => {
       res.send(user);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        res.status(notFoundError).send({ message: 'Пользователь не найден' });
-        return;
-      }
-      if (error instanceof mongoose.Error.ValidationError) {
+      if ((error instanceof mongoose.Error.CastError)
+        || (error instanceof mongoose.Error.ValidationError)) {
         res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }
@@ -89,7 +87,6 @@ const updateAvatar = (req, res) => {
     {
       new: true,
       runValidators: true,
-      upsert: true,
     },
   )
     .then((user) => {
@@ -99,11 +96,8 @@ const updateAvatar = (req, res) => {
       res.send(user);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        res.status(notFoundError).send({ message: 'Пользователь не найден' });
-        return;
-      }
-      if (error instanceof mongoose.Error.ValidationError) {
+      if ((error instanceof mongoose.Error.CastError)
+        || (error instanceof mongoose.Error.ValidationError)) {
         res.status(invalidDataError).send({ message: 'Некорректные данные' });
         return;
       }

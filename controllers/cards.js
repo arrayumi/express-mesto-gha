@@ -41,7 +41,7 @@ const deleteCard = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Некорректный id карточки' });
         return;
       }
       if (error instanceof mongoose.Error.ValidationError) {
@@ -68,7 +68,7 @@ const addLike = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Некорректный id карточки' });
         return;
       }
       if (error instanceof mongoose.Error.ValidationError) {
@@ -95,7 +95,7 @@ const deleteLike = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Некорректный id карточки' });
         return;
       }
       if (error instanceof mongoose.Error.ValidationError) {

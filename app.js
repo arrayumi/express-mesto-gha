@@ -11,6 +11,7 @@ const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const errors = require('./middlewares/errors');
 
 mongoose.connect(DB_URL)
   .then(() => {
@@ -32,6 +33,8 @@ app.use('/cards', cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Неверный адрес запроса' });
 });
+
+app.use(errors);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

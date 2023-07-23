@@ -1,23 +1,19 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
 
-const serverError = 500;
-const notFoundError = 404;
-const invalidDataError = 400;
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
+const ForbiddenError = require('../errors/forbidden-err');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.send(cards);
     })
-    .catch(() => {
-      res
-        .status(serverError)
-        .send({ message: 'Ошибка на сервере' });
-    });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
@@ -26,36 +22,30 @@ const createCard = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(invalidDataError).send({ message: 'Невалидные данные' });
-        return;
+        throw new ValidationError('Невалидные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    .orFail(new Error('notValidId'))
+    .orFail(new NotFoundError('Некорректный id карточки'))
     .then((card) => {
-      if (card.owner.toString() !== req.user._id) res.status(403).send({ message: 'Нельзя удалить чужую карточку' });
+      if (card.owner.toString() !== req.user._id) throw new ForbiddenError('Нельзя удалить чужую карточку');
       res.send({ data: card });
     })
     .catch((error) => {
-      if (error.message === 'notValidId') {
-        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
-        return;
-      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const addLike = (req, res) => {
+const addLike = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -63,24 +53,19 @@ const addLike = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('notValidId'))
+    .orFail(new NotFoundError('Некорректный id карточки'))
     .then((card) => {
       res.send({ data: card });
     })
     .catch((error) => {
-      if (error.message === 'notValidId') {
-        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
-        return;
-      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const deleteLike = (req, res) => {
+const deleteLike = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -88,20 +73,15 @@ const deleteLike = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('notValidId'))
+    .orFail(new NotFoundError('Некорректный id карточки'))
     .then((card) => {
       res.send({ data: card });
     })
     .catch((error) => {
-      if (error.message === 'notValidId') {
-        res.status(notFoundError).send({ message: 'Некорректный id карточки' });
-        return;
-      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 

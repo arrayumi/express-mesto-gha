@@ -4,34 +4,33 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
-const serverError = 500;
-const notFoundError = 404;
-const invalidDataError = 400;
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
+const ConflictError = require('../errors/conflict-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
 const SALT_ROUNDS = 10;
 const { JWT_SECRET } = require('../middlewares/auth');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       res.send(users);
     })
-    .catch(() => {
-      res
-        .status(serverError)
-        .send({ message: 'Ошибка на сервере' });
-    });
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
 
   User.findOne({ email })
     .then((userExists) => {
-      if (userExists) return res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
-      return bcrypt.hash(password, SALT_ROUNDS)
+      if (userExists) {
+        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
+      }
+      bcrypt.hash(password, SALT_ROUNDS)
         .then((hash) => User.create({
           name,
           about,
@@ -44,39 +43,31 @@ const createUser = (req, res) => {
         })
         .catch((error) => {
           if (error instanceof mongoose.Error.ValidationError) {
-            res.status(invalidDataError).send({ message: 'Невалидные данные' });
-            return;
+            throw new ValidationError('Невалидные данные');
           }
-          res.status(serverError).send({ message: 'Ошибка на сервере' });
+          next(error);
         });
     })
-    .catch(() => {
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
-    });
+    .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .orFail(new Error('notValidId'))
+    .orFail(new NotFoundError('Пользователь по данному id не найден'))
     .then((user) => {
       res.send(user);
     })
     .catch((error) => {
-      if (error.message === 'notValidId') {
-        res.status(notFoundError).send({ message: 'Некорректный id пользователя' });
-        return;
-      }
       if (error instanceof mongoose.Error.CastError) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -88,21 +79,20 @@ const updateProfile = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(notFoundError).send({ message: 'Пользователь не найден' });
+        throw new NotFoundError('Пользователь по данному id не найден');
       }
       res.send(user);
     })
     .catch((error) => {
       if ((error instanceof mongoose.Error.CastError)
         || (error instanceof mongoose.Error.ValidationError)) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -114,31 +104,30 @@ const updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(notFoundError).send({ message: 'Пользователь не найден' });
+        throw new NotFoundError('Пользователь по данному id не найден');
       }
       res.send(user);
     })
     .catch((error) => {
       if ((error instanceof mongoose.Error.CastError)
         || (error instanceof mongoose.Error.ValidationError)) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) res.status(invalidDataError).send({ message: 'Поля email или пароль не могут быть пустыми' });
-  return User.findOne({ email }).select('+password')
+  if (!email || !password) throw new ValidationError('Поля email или пароль не могут быть пустыми');
+  User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) return res.status(invalidDataError).send({ message: 'Пользователь с таким email не существует' });
-      return bcrypt.compare(password, user.password)
+      if (!user) throw new NotFoundError('Пользователь с таким email не существует');
+      bcrypt.compare(password, user.password)
         .then((isPasswordValid) => {
-          if (!isPasswordValid) return res.status(401).send({ message: 'Пароль указан неверно' });
+          if (!isPasswordValid) throw new UnauthorizedError('Пароль указан неверно');
           const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-          return res
+          res
             .cookie('jwt', token, {
               maxAge: 3600 * 24 * 7,
               httpOnly: true,
@@ -146,28 +135,29 @@ const login = (req, res) => {
             .status(200)
             .send({ token });
         })
-        .catch(() => {
-          res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        });
+        .catch(next);
     })
     .catch((error) => {
       if ((error instanceof mongoose.Error.CastError)
         || (error instanceof mongoose.Error.ValidationError)) {
-        res.status(invalidDataError).send({ message: 'Некорректные данные' });
-        return;
+        throw new ValidationError('Некорректные данные');
       }
-      res.status(serverError).send({ message: 'Ошибка на сервере' });
+      next(error);
     });
 };
 
-const getUserinfo = (req, res) => {
+const getUserinfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
-      if (!user) return res.status(notFoundError).send({ message: 'Пользователь не найден' });
-      return res.send(user);
+      if (!user) throw new NotFoundError('Пользователь с данный id не найден');
+      res.send(user);
     })
-    .catch(() => {
-      res.status(invalidDataError).send({ message: 'Некорректные данные' });
+    .catch((error) => {
+      if ((error instanceof mongoose.Error.CastError)
+        || (error instanceof mongoose.Error.ValidationError)) {
+        throw new ValidationError('Некорректные данные');
+      }
+      next(error);
     });
 };
 

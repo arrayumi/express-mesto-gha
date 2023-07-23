@@ -8,28 +8,29 @@ const app = express();
 
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
+const { createUser, login } = require('./controllers/users');
+const { auth } = require('./middlewares/auth');
 
 mongoose.connect(DB_URL)
   .then(() => {
-    console.log('connection successful');
+    console.log('mongoDB connected');
   });
 
 app.use(helmet());
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64b3164602d4e3f7445359c4',
-  };
+app.post('/signup', createUser);
+app.post('/signin', login);
 
-  next();
-});
+app.use(auth);
+
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Неверный адрес запроса' });
 });
 
 app.listen(PORT, () => {
-  console.log('start');
+  console.log(`App listening on port ${PORT}`);
 });

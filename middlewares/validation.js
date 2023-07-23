@@ -4,7 +4,7 @@ const { celebrate, Joi } = require('celebrate');
 const validateCreateUser = celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
-    password: Joi.string().required(),
+    password: Joi.string().required().min(8),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string(),
@@ -14,7 +14,7 @@ const validateCreateUser = celebrate({
 const validateLogin = celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
-    password: Joi.string().required(),
+    password: Joi.string().required().min(8),
   }),
 });
 
@@ -35,9 +35,17 @@ const validateUpdateAvatar = celebrate({
 
 // cards
 
+const validateCreateCard = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required(),
+  }),
+});
+
 module.exports = {
   validateCreateUser,
   validateLogin,
   validateUpdateProfile,
   validateUpdateAvatar,
+  validateCreateCard,
 };

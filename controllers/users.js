@@ -138,7 +138,13 @@ const login = (req, res) => {
         .then((isPasswordValid) => {
           if (!isPasswordValid) return res.status(401).send({ message: 'Пароль указан неверно' });
           const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-          return res.status(200).send({ token });
+          return res
+            .cookie('jwt', token, {
+              maxAge: 3600 * 24 * 7,
+              httpOnly: true,
+            })
+            .status(200)
+            .send({ token });
         })
         .catch(() => {
           res.status(invalidDataError).send({ message: 'Некорректные данные' });

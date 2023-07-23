@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 
@@ -18,6 +19,7 @@ mongoose.connect(DB_URL)
 
 app.use(helmet());
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.post('/signup', createUser);
 app.post('/signin', login);

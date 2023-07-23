@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
 
-const regexLink = /(http(s)?:\/\/(www\.)?)[0-9a-zA-Z\-._~:\/?#[\]@!$&'()*+,;=]+#?/;
+const regexLink = /(http(s)?:\/\/(www\.)?)[0-9a-zA-Z\-._~:/?#[\]@!$&'()*+,;=]+#?/;
 
 // login and register
 const validateCreateUser = celebrate({

@@ -39,7 +39,9 @@ const createUser = (req, res, next) => {
           password: hash,
         }))
         .then((user) => {
-          res.status(201).send(user);
+          res.status(201).send({
+            _id: user._id, name, about, avatar, email,
+          });
         })
         .catch((error) => {
           if (error instanceof mongoose.Error.ValidationError) {
@@ -122,7 +124,7 @@ const login = (req, res, next) => {
   if (!email || !password) throw new ValidationError('Поля email или пароль не могут быть пустыми');
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) throw new NotFoundError('Пользователь с таким email не существует');
+      if (!user) throw new UnauthorizedError('Пользователь с таким email не существует');
       bcrypt.compare(password, user.password)
         .then((isPasswordValid) => {
           if (!isPasswordValid) throw new UnauthorizedError('Пароль указан неверно');

@@ -7,6 +7,8 @@ const helmet = require('helmet');
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 const app = express();
 
+const { errors: celebrateErrors } = require('celebrate');
+
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -34,6 +36,7 @@ app.use('*', (req, res) => {
   res.status(404).send({ message: 'Неверный адрес запроса' });
 });
 
+app.use(celebrateErrors());
 app.use(errors);
 
 app.listen(PORT, () => {

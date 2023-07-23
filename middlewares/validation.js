@@ -1,8 +1,9 @@
 const { celebrate, Joi } = require('celebrate');
 
+// login and register
 const validateCreateUser = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email(),
+    email: Joi.string().email().required(),
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
@@ -11,9 +12,13 @@ const validateCreateUser = celebrate({
 });
 
 const validateLogin = celebrate({
-  email: Joi.string().required().email(),
-  password: Joi.string().required(),
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
 });
+
+// users
 
 const validateUpdateProfile = celebrate({
   body: Joi.object().keys({
@@ -27,6 +32,8 @@ const validateUpdateAvatar = celebrate({
     avatar: Joi.string().required(),
   }),
 });
+
+// cards
 
 module.exports = {
   validateCreateUser,

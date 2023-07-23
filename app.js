@@ -14,6 +14,7 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const errors = require('./middlewares/errors');
+const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 
 mongoose.connect(DB_URL)
   .then(() => {
@@ -24,8 +25,8 @@ app.use(helmet());
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post('/signup', validateCreateUser, createUser);
+app.post('/signin', validateLogin, login);
 
 app.use(auth);
 

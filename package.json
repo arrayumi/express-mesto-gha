@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint": "npx eslint"
+    "lint": "npx eslint ."
   },
-  "author": "",
+  "author": "Anna Andreeva",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",

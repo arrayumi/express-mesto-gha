@@ -4,11 +4,11 @@ const {
   getUsers, getUser, updateProfile, updateAvatar, getUserinfo,
 } = require('../controllers/users');
 
-const { validateUpdateProfile, validateUpdateAvatar } = require('../middlewares/validation');
+const { validateUpdateProfile, validateUpdateAvatar, validateUserId } = require('../middlewares/validation');
 
 router.get('/', getUsers);
 router.get('/me', getUserinfo);
-router.get('/:userId', getUser);
+router.get('/:userId', validateUserId, getUser);
 router.patch('/me', validateUpdateProfile, updateProfile);
 router.patch('/me/avatar', validateUpdateAvatar, updateAvatar);
 

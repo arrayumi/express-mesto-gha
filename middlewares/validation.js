@@ -1,4 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
+const mongoose = require('mongoose');
+const NotFoundError = require('../errors/not-found-err');
 
 const regexLink = /(http(s)?:\/\/(www\.)?)[0-9a-zA-Z\-._~:/?#[\]@!$&'()*+,;=]+#?/;
 
@@ -17,6 +19,18 @@ const validateLogin = celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required().min(8),
+  }),
+});
+
+//userId
+
+const validateUserId = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().custom((value) => {
+      const isValid = mongoose.isValidObjectId(value);
+      if (isValid) return value;
+      throw new NotFoundError('Пользователь по данному id не найден');
+    }),
   }),
 });
 
@@ -50,4 +64,5 @@ module.exports = {
   validateUpdateProfile,
   validateUpdateAvatar,
   validateCreateCard,
+  validateUserId,
 };

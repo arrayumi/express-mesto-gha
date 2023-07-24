@@ -22,7 +22,7 @@ const validateLogin = celebrate({
   }),
 });
 
-//userId
+// userId
 
 const validateUserId = celebrate({
   params: Joi.object().keys({
@@ -30,6 +30,18 @@ const validateUserId = celebrate({
       const isValid = mongoose.isValidObjectId(value);
       if (isValid) return value;
       throw new NotFoundError('Пользователь по данному id не найден');
+    }),
+  }),
+});
+
+// cardId
+
+const validateCardId = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().custom((value) => {
+      const isValid = mongoose.isValidObjectId(value);
+      if (isValid) return value;
+      throw new NotFoundError('Карточка с данным id не найдена');
     }),
   }),
 });
@@ -65,4 +77,5 @@ module.exports = {
   validateUpdateAvatar,
   validateCreateCard,
   validateUserId,
+  validateCardId,
 };
